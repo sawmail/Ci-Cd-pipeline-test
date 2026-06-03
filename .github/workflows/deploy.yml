@@ -1,0 +1,32 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Webuzo
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 161.129.67.102
+          username: sayteoco
+          key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+            QyNTUxOQAAACBPmWeEP6KHiC52QPHjIHo9yGQNWzmEegvpedUFbluWmAAAAJhzQlkcc0JZ
+            HAAAAAtzc2gtZWQyNTUxOQAAACBPmWeEP6KHiC52QPHjIHo9yGQNWzmEegvpedUFbluWmA
+            AAAEAX75HDTUcbED29FsBjGXYlrQPTV7U33X6xO9tsEZMnjU+ZZ4Q/ooeILnZA8eMgej3I
+            ZA1bOYR6C+l51QVuW5aYAAAADmdpdGh1Yi1hY3Rpb25zAQIDBAUGBw==
+            -----END OPENSSH PRIVATE KEY-----
+          port: 22
+          script: |
+            cd /home/sayteoco/test
+            git pull origin master
+            pnpm install
+            pnpm build
+            pm2 restart ci-cd || pm2 start pnpm --name ci-cd -- start
