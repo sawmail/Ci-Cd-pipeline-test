@@ -11,6 +11,28 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build standalone bundle
+        run: pnpm build
+        env:
+          DEPLOYMENT_VERSION: ${{ github.sha }}
+      - name: Stage deploy files
+        run: |
+          rm -rf dist-deploy
+          mkdir -p dist-deploy/.next
+          cp -R .next/standalone/. dist-deploy/
+          cp -R .next/static dist-deploy/.next/static
+          cp -R public/. dist-deploy/
 
       - name: Deploy files to Webuzo FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -18,10 +40,5 @@ jobs:
           server: 161.129.67.102
           username: sayteoco
           password: r9bEYku217(E!Y
-          local-dir: ./
+          local-dir: ./dist-deploy/
           server-dir: /test/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.next/**

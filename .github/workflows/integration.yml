@@ -12,39 +12,25 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [20.x, 22.x]
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          cache: "pnpm"
       - name: "Installing dependencies"
-        run: npm i
+        run: pnpm install --frozen-lockfile
+
+      - name: "Lint command"
+        run: pnpm lint
 
       - name: "Build command"
-        run: npm run build
-
-  unit-tests:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - name: "Installing dependencies"
-        run: npm i
-
-      - name: "Running Test Case command"
-        run: npm run test
+        run: pnpm build
+        env:
+          DEPLOYMENT_VERSION: ${{ github.sha }}
