@@ -12,14 +12,31 @@ jobs:
       - name: Get code
         uses: actions/checkout@v4
 
-      - name: Deploy files to Webuzo FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Upload files to Webuzo using SSH
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: 161.129.67.102
-          username: sayteoco
-          password: r9bEYku217(E!Y
-          local-dir: ./
-          server-dir: /test/
+          host: ${{ secrets.WEBUZO_HOST }}
+          username: ${{ secrets.WEBUZO_USER }}
+          port: ${{ secrets.WEBUZO_PORT }}
+          key: ${{ secrets.WEBUZO_SSH_KEY }}
+          source: "."
+          target: "/home/sayteoco/test"
+          rm: false
           exclude: |
-            **/.git*
-            **/.git*/**
+            .git
+            node_modules
+            .next
+
+      - name: Install, build and restart app
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.WEBUZO_HOST }}
+          username: ${{ secrets.WEBUZO_USER }}
+          port: ${{ secrets.WEBUZO_PORT }}
+          key: ${{ secrets.WEBUZO_SSH_KEY }}
+          script: |
+            cd /home/sayteoco/test
+            npm install
+            npm run build
+            pm2 restart next-app || pm2 start npm --name next-app -- start
+            pm2 save
