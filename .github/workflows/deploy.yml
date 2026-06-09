@@ -12,31 +12,26 @@ jobs:
       - name: Get code
         uses: actions/checkout@v4
 
-      - name: Upload files to Webuzo using SSH
+      - name: Upload files to Webuzo
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.WEBUZO_HOST }}
-          username: ${{ secrets.WEBUZO_USER }}
-          port: ${{ secrets.WEBUZO_PORT }}
+          host: mycloud.himalayan.host
+          username: sayteoco
+          port: 8186
           key: ${{ secrets.WEBUZO_SSH_KEY }}
           source: "."
-          target: "/home/sayteoco/test"
-          rm: false
-          exclude: |
-            .git
-            node_modules
-            .next
+          target: "/home2/sayteoco/test"
 
       - name: Install, build and restart app
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.WEBUZO_HOST }}
-          username: ${{ secrets.WEBUZO_USER }}
-          port: ${{ secrets.WEBUZO_PORT }}
+          host: mycloud.himalayan.host
+          username: sayteoco
+          port: 8186
           key: ${{ secrets.WEBUZO_SSH_KEY }}
           script: |
-            cd /home/sayteoco/test
+            cd /home2/sayteoco/test
             npm install
             npm run build
-            pm2 restart next-app || pm2 start npm --name next-app -- start
-            pm2 save
+            npx pm2 restart next-app || npx pm2 start npm --name next-app -- start
+            npx pm2 save
